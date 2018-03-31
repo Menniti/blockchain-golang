@@ -5,8 +5,9 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/menniti/blockchain-golang/model"
+	"github.com/menniti/blockchain-golang/server"
 	"github.com/menniti/blockchain-golang/services/block"
-	"github.com/menniti/blockchain-golang/webserver"
 )
 
 func main() {
@@ -14,6 +15,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	server.bcServer = make(chan []model.Block)
 
 	go block.GenerateGenesisBlock()
 
