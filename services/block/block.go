@@ -19,8 +19,8 @@ func GenerateBlock(oldBlock model.Block, BPM int) (newBlock model.Block, err err
 	newBlock.BPM = BPM
 	newBlock.PrevHash = oldBlock.Hash
 	newBlock.Index = oldBlock.Index + 1
-	newBlock.Hash = hash.CalculateHash(&newBlock)
 	newBlock.Difficulty = model.Difficulty
+	newBlock.Hash = hash.CalculateHash(&newBlock)
 
 	for i := 0; ; i++ {
 		hex := fmt.Sprintf("%x", i)
@@ -75,6 +75,7 @@ func GenerateGenesisBlock() {
 	t := time.Now()
 	genesisBlock := model.Block{0, t.String(), 0, "", "", 0, ""}
 	spew.Dump(genesisBlock)
+
 	model.Mutex.Lock()
 	chain.Blockchain = append(chain.Blockchain, genesisBlock)
 	model.Mutex.Unlock()
