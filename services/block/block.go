@@ -24,14 +24,7 @@ func GenerateBlock(oldBlock model.Block, BPM int) (newBlock model.Block, err err
 
 	for i := 0; ; i++ {
 		hex := fmt.Sprintf("%x", i)
-		fmt.Println("====================")
-		fmt.Println("hex ", hex)
-		fmt.Println("====================")
 		newBlock.Nonce = hex
-
-		fmt.Println("==================")
-		fmt.Println("newBlock.Nonce", newBlock.Nonce)
-		fmt.Println("==================")
 		if !hash.IsValidHash(hash.CalculateHash(&newBlock), newBlock.Difficulty) {
 			fmt.Println(hash.CalculateHash(&newBlock), " do more work")
 			continue

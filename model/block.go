@@ -3,7 +3,7 @@ package model
 import "sync"
 
 //Difficulty the value that represents the number of 0 in front of hash to be mined
-const Difficulty = 4
+const Difficulty = 1
 
 //Mutex prevent some go routine try to access some data at the same time, in this case we will use to prevent some block has been create at the same time
 var Mutex = &sync.Mutex{}

@@ -21,8 +21,6 @@ func CalculateHash(block *model.Block) string {
 //IsValidHash check if the hash has number of 0 in front of hash
 func IsValidHash(hash string, difficult int) bool {
 	prefix := strings.Repeat("0", model.Difficulty)
-	fmt.Println("=========================")
 	fmt.Println("prefix", prefix)
-	fmt.Println("=========================")
 	return strings.HasPrefix(hash, prefix)
 }

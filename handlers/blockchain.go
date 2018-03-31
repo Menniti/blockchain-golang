@@ -9,11 +9,13 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/menniti/blockchain-golang/model"
 	"github.com/menniti/blockchain-golang/services/block"
+	"github.com/menniti/blockchain-golang/services/broadcast"
 	"github.com/menniti/blockchain-golang/services/chain"
 )
 
@@ -79,9 +81,11 @@ func respondWithJSON(writter http.ResponseWriter, request *http.Request, statusC
 
 //HandleConnection handle the connection
 func HandleConnection(conn net.Conn, bcServer chan []model.Block) {
-	io.WriteString(conn, "Enter a new BPM:")
-	scanner := bufio.NewScanner(conn)
 
+	io.WriteString(conn, "Enter a new BPM: ")
+
+	scanner := bufio.NewScanner(conn)
+	// defer conn.Close()
 	go func() {
 		for scanner.Scan() {
 			bpm, err := strconv.Atoi(scanner.Text())
@@ -91,6 +95,7 @@ func HandleConnection(conn net.Conn, bcServer chan []model.Block) {
 				log.Printf("%v not a number: %v", scanner.Text(), err)
 				continue
 			}
+			fmt.Println("bmp: ", bpm)
 			//generate new block
 			newBlock, err := block.GenerateBlock(chain.Blockchain[len(chain.Blockchain)-1], bpm)
 			if err != nil {
@@ -100,10 +105,24 @@ func HandleConnection(conn net.Conn, bcServer chan []model.Block) {
 			//valid new block
 			if block.IsValidBlock(chain.Blockchain[len(chain.Blockchain)-1], newBlock) {
 				newBlockChain := append(chain.Blockchain, newBlock)
+				fmt.Println("=====================")
+				fmt.Println(newBlockChain)
+				fmt.Println("=====================")
 				chain.ReplaceChain(newBlockChain, chain.Blockchain)
 			}
+			fmt.Println("chegou aqui")
+			fmt.Println("chain.Blockchain", chain.Blockchain)
+			fmt.Println("bcServer", bcServer)
 			bcServer <- chain.Blockchain
+
 			io.WriteString(conn, "\nEnter a new BPM:")
+			wg := new(sync.WaitGroup)
+			wg.Add(1)
+			go broadcast.ReceiveBroadcast(conn, chain.Blockchain, wg)
+			wg.Wait()
+			for _ = range bcServer {
+				fmt.Print(chain.Blockchain)
+			}
 		}
 	}()
 }
