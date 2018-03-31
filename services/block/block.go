@@ -74,6 +74,8 @@ func IsValidBlock(oldBlock, newBlock model.Block) bool {
 func GenerateGenesisBlock() {
 	t := time.Now()
 	genesisBlock := model.Block{0, t.String(), 0, "", "", 0, ""}
+	generisHash := hash.CalculateHash(&genesisBlock)
+	genesisBlock.Hash = generisHash
 	spew.Dump(genesisBlock)
 
 	model.Mutex.Lock()
