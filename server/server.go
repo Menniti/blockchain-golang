@@ -7,11 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/menniti/blockchain-golang/model"
 	"github.com/menniti/blockchain-golang/router"
 )
-
-var bcServer chan []model.Block
 
 //Run run the webservice
 func Run() (err error) {

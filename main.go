@@ -1,14 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net"
+	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/menniti/blockchain-golang/handlers"
 	"github.com/menniti/blockchain-golang/model"
-	"github.com/menniti/blockchain-golang/server"
 	"github.com/menniti/blockchain-golang/services/block"
 )
+
+//BcServer get the chain
+var BcServer chan []model.Block
 
 func main() {
 	err := godotenv.Load()
@@ -16,13 +20,22 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	server.bcServer = make(chan []model.Block)
+	BcServer = make(chan []model.Block)
 
 	go block.GenerateGenesisBlock()
 
-	err = webserver.Run()
+	//Listing direcly in the port ADDR
+	server, err := net.Listen("tcp", ":"+os.Getenv("ADDR"))
 	if err != nil {
-		fmt.Print("[main] Error to run the blockchain", err.Error())
-		return
+		log.Fatal(err)
+	}
+	defer server.Close()
+
+	for {
+		conn, err := server.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go handlers.HandleConnection(conn, BcServer)
 	}
 }

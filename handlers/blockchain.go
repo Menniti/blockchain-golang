@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/davecgh/go-spew/spew"
 
@@ -71,4 +75,35 @@ func respondWithJSON(writter http.ResponseWriter, request *http.Request, statusC
 	}
 	writter.WriteHeader(statusCode)
 	writter.Write(response)
+}
+
+//HandleConnection handle the connection
+func HandleConnection(conn net.Conn, bcServer chan []model.Block) {
+	io.WriteString(conn, "Enter a new BPM:")
+	scanner := bufio.NewScanner(conn)
+
+	go func() {
+		for scanner.Scan() {
+			bpm, err := strconv.Atoi(scanner.Text())
+			if err != nil {
+				log.Println("[HandleConnection] Erro ao ver o text do scanner.text()", err.Error())
+				fmt.Println("Erro ao receber os bpm, o valor deve ser um número inteiro", err.Error())
+				log.Printf("%v not a number: %v", scanner.Text(), err)
+				continue
+			}
+			//generate new block
+			newBlock, err := block.GenerateBlock(chain.Blockchain[len(chain.Blockchain)-1], bpm)
+			if err != nil {
+				log.Printf("Error ao criar um novo Bloco ERROR: %s", err.Error())
+			}
+
+			//valid new block
+			if block.IsValidBlock(chain.Blockchain[len(chain.Blockchain)-1], newBlock) {
+				newBlockChain := append(chain.Blockchain, newBlock)
+				chain.ReplaceChain(newBlockChain, chain.Blockchain)
+			}
+			bcServer <- chain.Blockchain
+			io.WriteString(conn, "\nEnter a new BPM:")
+		}
+	}()
 }
